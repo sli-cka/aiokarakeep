@@ -1,0 +1,28 @@
+name: Publish
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Set up Python
+        run: uv python install 3.13
+      - name: Build package
+        run: uv run --python 3.13 --extra release python -m build --installer uv
+      - name: Check package metadata
+        run: uv run --python 3.13 --extra release twine check dist/*
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1

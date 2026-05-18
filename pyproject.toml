@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aiokarakeep"
+version = "0.1.0"
+description = "Async Python client for the Karakeep API"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "sli-cka" },
+]
+keywords = ["asyncio", "aiohttp", "home-assistant", "karakeep"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: AsyncIO",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+]
+dependencies = [
+  "aiohttp>=3.9.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+]
+release = [
+  "build>=1.2.0",
+  "twine>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sli-cka/aiokarakeep"
+Repository = "https://github.com/sli-cka/aiokarakeep"
+Issues = "https://github.com/sli-cka/aiokarakeep/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aiokarakeep"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/aiokarakeep",
+  "tests",
+  "CHANGELOG.md",
+  "LICENSE",
+  "README.md",
+  "RELEASE_CHECKLIST.md",
+  "pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
