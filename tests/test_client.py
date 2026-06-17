@@ -268,10 +268,20 @@ async def test_get_version_404() -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_version_invalid_payload() -> None:
-    """Test version rejects non-object responses."""
-    session = FakeSession(FakeResponse(200, ["0.29.0"]))
+@pytest.mark.parametrize(
+    "response",
+    [
+        FakeResponse(200, ["0.29.0"]),
+        FakeResponse(200, {"other": "field"}),
+        FakeResponse(200, {"version": 29}),
+        FakeResponse(200, json_error=ValueError("invalid json")),
+        FakeResponse(404, json_error=ValueError("not found")),
+        FakeResponse(500, {"error": "server"}),
+    ],
+)
+async def test_get_version_unavailable(response: FakeResponse) -> None:
+    """Test the optional version endpoint returns None when unavailable."""
+    session = FakeSession(response)
     client = KarakeepClient("https://karakeep.example.com", "token", session)  # type: ignore[arg-type]
 
-    with pytest.raises(KarakeepInvalidResponseError):
-        await client.async_get_version()
+    assert await client.async_get_version() is None

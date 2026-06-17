@@ -78,17 +78,21 @@ class KarakeepClient:
         return {**data, "status_code": status_code}
 
     async def async_get_version(self) -> str | None:
-        """Return the Karakeep version, if exposed by the server."""
+        """Return the Karakeep version, if exposed by the server.
+
+        The version endpoint is optional and only available on Karakeep
+        ``0.29.0`` and later. Any response that does not contain a valid
+        version string (missing endpoint, non-JSON body, or unexpected status
+        code) is treated as unknown and returns ``None``. Only connection and
+        timeout errors are raised.
+        """
         status_code, data = await self._async_request_json(
             "/api/version",
             raise_for_status=False,
+            allow_invalid_json=True,
         )
-        if status_code == 404:
+        if status_code >= 400 or not isinstance(data, dict):
             return None
-
-        self._raise_for_status(status_code)
-        if not isinstance(data, dict):
-            raise KarakeepInvalidResponseError("Version response is not an object")
 
         version = data.get("version")
         return version if isinstance(version, str) else None
