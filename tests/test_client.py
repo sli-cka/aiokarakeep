@@ -16,8 +16,18 @@ from aiokarakeep import (
     KarakeepConnectionError,
     KarakeepError,
     KarakeepInvalidResponseError,
+    KarakeepStats,
     KarakeepTimeoutError,
 )
+
+STATS_PAYLOAD = {
+    "numBookmarks": 10,
+    "numFavorites": 2,
+    "numArchived": 3,
+    "numHighlights": 4,
+    "numLists": 5,
+    "numTags": 6,
+}
 
 
 class FakeResponse:
@@ -82,6 +92,7 @@ def test_public_exports() -> None:
         "KarakeepConnectionError",
         "KarakeepError",
         "KarakeepInvalidResponseError",
+        "KarakeepStats",
         "KarakeepTimeoutError",
     }
     assert issubclass(KarakeepAuthError, KarakeepApiError)
@@ -92,10 +103,17 @@ def test_public_exports() -> None:
 @pytest.mark.asyncio
 async def test_get_stats() -> None:
     """Test fetching Karakeep stats."""
-    session = FakeSession(FakeResponse(200, {"numBookmarks": 4}))
+    session = FakeSession(FakeResponse(200, STATS_PAYLOAD))
     client = KarakeepClient("https://karakeep.example.com/", "token", session)  # type: ignore[arg-type]
 
-    assert await client.async_get_stats() == {"numBookmarks": 4}
+    assert await client.async_get_stats() == KarakeepStats(
+        num_bookmarks=10,
+        num_favorites=2,
+        num_archived=3,
+        num_highlights=4,
+        num_lists=5,
+        num_tags=6,
+    )
     assert (
         session.calls[0]["url"]
         == "https://karakeep.example.com/api/v1/users/me/stats"
@@ -107,7 +125,7 @@ async def test_get_stats() -> None:
 @pytest.mark.asyncio
 async def test_custom_timeout() -> None:
     """Test requests use the configured timeout."""
-    session = FakeSession(FakeResponse(200, {"numBookmarks": 4}))
+    session = FakeSession(FakeResponse(200, STATS_PAYLOAD))
     client = KarakeepClient(
         "https://karakeep.example.com",
         "token",
@@ -179,6 +197,25 @@ async def test_get_stats_invalid_json() -> None:
 async def test_get_stats_invalid_payload() -> None:
     """Test non-object stats payloads are rejected."""
     session = FakeSession(FakeResponse(200, ["not", "an", "object"]))
+    client = KarakeepClient("https://karakeep.example.com", "token", session)  # type: ignore[arg-type]
+
+    with pytest.raises(KarakeepInvalidResponseError):
+        await client.async_get_stats()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {k: v for k, v in STATS_PAYLOAD.items() if k != "numBookmarks"},
+        {**STATS_PAYLOAD, "numBookmarks": "10"},
+        {**STATS_PAYLOAD, "numBookmarks": None},
+        {**STATS_PAYLOAD, "numBookmarks": True},
+    ],
+)
+async def test_get_stats_invalid_counts(payload: dict[str, Any]) -> None:
+    """Test missing or non-integer stat counts are rejected."""
+    session = FakeSession(FakeResponse(200, payload))
     client = KarakeepClient("https://karakeep.example.com", "token", session)  # type: ignore[arg-type]
 
     with pytest.raises(KarakeepInvalidResponseError):

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aiokarakeep"
-version = "0.1.0"
+version = "0.2.0"
 description = "Async Python client for the Karakeep API"
 readme = "README.md"
 requires-python = ">=3.11"

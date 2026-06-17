@@ -21,6 +21,7 @@ from .exceptions import (
     KarakeepInvalidResponseError,
     KarakeepTimeoutError,
 )
+from .models import KarakeepStats
 
 DEFAULT_TIMEOUT = 15
 
@@ -56,12 +57,12 @@ class KarakeepClient:
         """Return request headers."""
         return {"Authorization": f"Bearer {self._token}"}
 
-    async def async_get_stats(self) -> dict[str, Any]:
+    async def async_get_stats(self) -> KarakeepStats:
         """Return statistics for the authenticated Karakeep user."""
         _, data = await self._async_request_json("/api/v1/users/me/stats")
         if not isinstance(data, dict):
             raise KarakeepInvalidResponseError("Stats response is not an object")
-        return data
+        return KarakeepStats.from_dict(data)
 
     async def async_get_health(self) -> dict[str, Any]:
         """Return Karakeep health information."""

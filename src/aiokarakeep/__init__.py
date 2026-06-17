@@ -9,6 +9,7 @@ from .exceptions import (
     KarakeepInvalidResponseError,
     KarakeepTimeoutError,
 )
+from .models import KarakeepStats
 
 __all__ = [
     "KarakeepApiError",
@@ -17,6 +18,7 @@ __all__ = [
     "KarakeepConnectionError",
     "KarakeepError",
     "KarakeepInvalidResponseError",
+    "KarakeepStats",
     "KarakeepTimeoutError",
 ]
 
